@@ -20,8 +20,16 @@ const db = mysql.createConnection(
 );
 // Get all candidates
 app.get('/api/candidates', (req, res) => {
-    const sql = `SELECT * FROM candidates`;
-  
+    const sql = `SELECT candidates.*, parties.name
+    AS party_name 
+    FROM candidates 
+    LEFT JOIN parties 
+    ON candidates.party_id = parties.id`;
+    //inorder: select from candidates table with all their keys, and the parties table with name of parties
+    //AS party_name will call 'name' party_name on the graph instead
+    //FROM candidates makes that table our focus to draw onto
+    //LEFT JOIN means we're merging (parts) of the parties table onto candidates
+    //ON candidates.party_id = parties.id means we're matching candidate's party_id's with parties' id's
     db.query(sql, (err, rows) => {
       if (err) {
         res.status(500).json({ error: err.message });
@@ -35,7 +43,12 @@ app.get('/api/candidates', (req, res) => {
 });
 // Get a single candidate
 app.get('/api/candidate/:id', (req, res) => {
-    const sql = `SELECT * FROM candidates WHERE id = ?`;
+    const sql = `SELECT candidates.*, parties.name 
+    AS party_name 
+    FROM candidates 
+    LEFT JOIN parties 
+    ON candidates.party_id = parties.id 
+    WHERE candidates.id = ?`; //have to place where at the end of the statement if doing a join
     const params = [req.params.id]; //sql query takes params as an array
   
     db.query(sql, params, (err, row) => {
